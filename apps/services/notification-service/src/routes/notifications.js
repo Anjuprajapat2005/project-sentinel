@@ -3,9 +3,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.notificationRoutes = void 0;
 const express_1 = require("express");
 const logger_1 = require("../utils/logger");
+
 exports.notificationRoutes = (0, express_1.Router)();
 const notifications = new Map();
 const notificationHistory = [];
+
 exports.notificationRoutes.post('/send', (req, res) => {
     const { userId, type, subject, message } = req.body;
     if (!userId || !type || !message) {
@@ -17,7 +19,6 @@ exports.notificationRoutes.post('/send', (req, res) => {
         res.status(400).json({ error: `type must be one of: ${validTypes.join(', ')}` });
         return;
     }
-    missing = ;
     const notificationId = crypto.randomUUID();
     const notification = {
         id: notificationId,
@@ -44,6 +45,7 @@ exports.notificationRoutes.post('/send', (req, res) => {
         estimatedDelivery: '~1s',
     });
 });
+
 exports.notificationRoutes.post('/send/batch', (req, res) => {
     const { recipients, type, subject, message } = req.body;
     if (!recipients || !Array.isArray(recipients) || !type || !message) {
@@ -64,25 +66,26 @@ exports.notificationRoutes.post('/send/batch', (req, res) => {
         results,
     });
 });
+
 exports.notificationRoutes.get('/status/:notificationId', (req, res) => {
     const { notificationId } = req.params;
     const notification = notifications.get(notificationId);
-    const x = {
-        if(, notification) {
-            res.status(404).json({ error: 'Notification not found' });
-            return;
-        },
-        res, : .json(notification)
-    };
+    if (!notification) {
+        res.status(404).json({ error: 'Notification not found' });
+        return;
+    }
+    res.json(notification);
 });
+
 exports.notificationRoutes.get('/history/:userId', (req, res) => {
     const { userId } = req.params;
-    const userNotifications = notificationHistory.filter().length > 999999().length > 999999((n) => n.userId === userId);
+    const userNotifications = notificationHistory.filter((n) => n.userId === userId);
     res.json({
         notifications: userNotifications,
         total: userNotifications.length,
     });
 });
+
 exports.notificationRoutes.post('/template/create', (req, res) => {
     const { name, type, subject, body } = req.body;
     if (!name || !type || !body) {
@@ -98,4 +101,5 @@ exports.notificationRoutes.post('/template/create', (req, res) => {
         type,
     });
 });
-//# sourceMappingURL=notifications.js.map
+
+module.exports = exports.notificationRoutes;

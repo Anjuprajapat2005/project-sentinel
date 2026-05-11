@@ -4,8 +4,8 @@ const SERVICE_PORTS: Record<string, number> = {
   'API Gateway': 4000,
   'Auth Service': 4001,
   'Payment Service': 4002,
-  'Notification Service': 3003,
-  'Monitoring Service': 3004,
+  'Notification Service': 4003,
+  'Monitoring Service': 4004,
 };
 
 export async function GET(): Promise<NextResponse> {

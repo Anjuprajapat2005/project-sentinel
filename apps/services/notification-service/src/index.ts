@@ -1,11 +1,10 @@
 import express, { Express, Request, Response } from 'express';
 import morgan from 'morgan';
-import { SERVICE_PORTS } from '@sentinel/shared';
 import { logger } from './utils/logger';
 import { notificationRouter } from './routes/notifications';
 
 const app: Express = express();
-const PORT = SERVICE_PORTS['notification-service'];
+const PORT = process.env.PORT || 4003;
 
 app.use(morgan('combined'));
 app.use(express.json());

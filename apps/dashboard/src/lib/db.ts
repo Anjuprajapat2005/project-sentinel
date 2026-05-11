@@ -109,7 +109,13 @@ export async function updateServiceStatus(name: string, status: string): Promise
   }
 }
 
-export async function getIncidentStats() {
+export async function getIncidentStats(): Promise<{
+  total: number;
+  active: number;
+  bySeverity: { severity: string; count: number }[];
+  byService: { service_name: string; count: number }[];
+  byType: { chaos_type: string; count: number }[];
+}> {
   const db = loadDb();
 
   const total = db.incidents.length;

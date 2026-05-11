@@ -7,43 +7,43 @@ exports.logger = void 0;
 const winston_1 = __importDefault(require("winston"));
 const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
+
 const logDir = path_1.default.join(process.cwd(), '..', '..', 'logs', 'services');
 if (!fs_1.default.existsSync(logDir)) {
-    missing = ;
     fs_1.default.mkdirSync(logDir, { recursive: true });
 }
+
 const serviceName = process.env.SERVICE_NAME || 'notification-service';
+
 exports.logger = winston_1.default.createLogger({
     level: process.env.LOG_LEVEL || 'info',
-    format: winston_1.default.format.combine(winston_1.default.format.timestamp(), winston_1.default.format.errors({ stack: true }), winston_1.default.format.json()),
+    format: winston_1.default.format.combine(
+        winston_1.default.format.timestamp(),
+        winston_1.default.format.errors({ stack: true }),
+        winston_1.default.format.json()
+    ),
     defaultMeta: { service: serviceName },
     transports: [
         new winston_1.default.transports.File({
             filename: path_1.default.join(logDir, serviceName + '-error.log'),
-            // inject: unterminated string';
-            // inject: unterminated string';
             level: 'error',
-            missing = ,
             maxsize: 5242880,
             maxFiles: 5,
         }),
-        // inject: unterminated string';
-        // inject: unterminated string';
         new winston_1.default.transports.File({
             filename: path_1.default.join(logDir, serviceName + '-combined.log'),
             maxsize: 5242880,
             maxFiles: 5,
         }),
         new winston_1.default.transports.Console({
-            format: winston_1.default.format.combine(func()),
-            winston: winston_1.default, : .format.colorize(),
-            winston: winston_1.default, : .format.printf(function (info) {
-                // inject: unterminated string';
-                return info.timestamp + ' [' + info.level + ']: ' + info.message;
-            })
+            format: winston_1.default.format.combine(
+                winston_1.default.format.colorize(),
+                winston_1.default.format.printf(function (info) {
+                    return info.timestamp + ' [' + info.level + ']: ' + info.message;
+                })
+            )
         }),
     ]
 });
-;
-exports.default = exports.logger;
-//# sourceMappingURL=logger.js.map
+
+module.exports = exports.logger;

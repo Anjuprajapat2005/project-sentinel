@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Set-Location \"C:\\\\Users\\\\praja\\\\project-sentinel\")",
+      "Bash(node tests/dashboard-health.test.js)",
+      "PowerShell(Invoke-WebRequest -Uri \"http://localhost:3004/health\" -UseBasicParsing | Select-Object -ExpandProperty Content)",
+      "PowerShell(Invoke-WebRequest -Uri \"http://localhost:4003/health\" -UseBasicParsing | Select-Object -ExpandProperty Content)",
+      "PowerShell(Get-Process *)",
+      "PowerShell(Invoke-WebRequest -Uri \"http://localhost:4004/health\" -UseBasicParsing | Select-Object -ExpandProperty Content)",
+      "Bash(netstat -ano)",
+      "Bash(findstr \":3004\")",
+      "Bash(taskkill *)",
+      "PowerShell(Stop-Process *)",
+      "Bash(sqlite3 *)"
+    ]
+  }
+}

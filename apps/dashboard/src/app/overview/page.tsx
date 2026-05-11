@@ -21,22 +21,50 @@ interface PaymentMetrics {
   refundedPayments: number;
 }
 
-const FALLBACK_STATS = {
-  total_incidents: 0,
-  active_incidents: 0,
-  critical_incidents: 0,
-  resolved_incidents: 0,
+interface Stats {
+  total: number;
+  active: number;
+  bySeverity: { severity: string; count: number }[];
+  byService: { service_name: string; count: number }[];
+  byType: { chaos_type: string; count: number }[];
+}
+
+interface Service {
+  id: number;
+  name: string;
+  port: number;
+  status: string;
+  last_health_check: string | null;
+}
+
+interface Incident {
+  id: number;
+  service_name: string;
+  chaos_type: string;
+  description: string;
+  severity: string;
+  status: string;
+  timestamp: string;
+}
+
+const FALLBACK_STATS: Stats = {
+  total: 0,
+  active: 0,
+  bySeverity: [],
+  byService: [],
+  byType: [],
 };
 
 export default function OverviewPage() {
-  const [stats, setStats] = useState<any>(FALLBACK_STATS);
-  const [services, setServices] = useState<any[]>([]);
-  const [incidents, setIncidents] = useState<any[]>([]);
+  const [stats, setStats] = useState<Stats>(FALLBACK_STATS);
+  const [services, setServices] = useState<Service[]>([]);
+  const [incidents, setIncidents] = useState<Incident[]>([]);
   const [paymentMetrics, setPaymentMetrics] = useState<PaymentMetrics | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchData = async () => {
       try {
         const [statsRes, servicesRes] = await Promise.all([
@@ -44,37 +72,74 @@ export default function OverviewPage() {
           fetch('/api/services', { signal: AbortSignal.timeout(5000) }),
         ]);
 
+        if (cancelled) return;
+
         if (statsRes.ok) {
           const statsData = await statsRes.json();
-          if (statsData.success) {
+          if (statsData.success && !cancelled) {
             setStats(statsData.data);
           }
         }
 
         if (servicesRes.ok) {
           const servicesData = await servicesRes.json();
-          if (servicesData.success) {
+          if (servicesData.success && !cancelled) {
             setServices(servicesData.data);
           }
         }
 
-        setIsConnected(true);
+        if (!cancelled) {
+          setIsConnected(true);
+        }
       } catch (err) {
-        console.warn('Failed to fetch overview data:', err);
-        setIsConnected(false);
+        if (!cancelled) {
+          console.warn('Failed to fetch overview data:', err);
+          setIsConnected(false);
+        }
       }
     };
 
     fetchData();
     const interval = setInterval(fetchData, 30000);
-    return () => clearInterval(interval);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
   }, []);
 
   useEffect(() => {
-    fetch('http://localhost:4002/metrics')
-      .then(res => res.json())
-      .then(data => setPaymentMetrics(data.metrics || null))
-      .catch(() => setPaymentMetrics(null));
+    let cancelled = false;
+
+    const fetchPaymentMetrics = async () => {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+        const res = await fetch('http://localhost:4002/metrics', {
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        if (res.ok && !cancelled) {
+          const data = await res.json();
+          if (!cancelled) {
+            setPaymentMetrics(data.metrics || null);
+          }
+        }
+      } catch {
+        if (!cancelled) {
+          setPaymentMetrics(null);
+        }
+      }
+    };
+
+    fetchPaymentMetrics();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const recentIncidents = incidents.slice(0, 6);
@@ -157,13 +222,13 @@ export default function OverviewPage() {
       <div className="grid gap-4 md:grid-cols-4">
         <MetricCard
           title="Total Incidents"
-          value={stats.total_incidents || 0}
+          value={stats.total || 0}
           icon={<AlertCircle className="h-5 w-5" />}
           color="default"
         />
         <MetricCard
           title="Active Incidents"
-          value={stats.active_incidents || 0}
+          value={stats.active || 0}
           icon={<Activity className="h-5 w-5" />}
           color="warning"
         />
@@ -175,7 +240,7 @@ export default function OverviewPage() {
         />
         <MetricCard
           title="Critical"
-          value={stats.critical_incidents || 0}
+          value={stats.bySeverity.filter((s) => s.severity === 'critical').reduce((acc, s) => acc + s.count, 0)}
           icon={<Shield className="h-5 w-5" />}
           color="destructive"
         />

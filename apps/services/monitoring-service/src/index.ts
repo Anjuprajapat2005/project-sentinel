@@ -1,4 +1,3 @@
-import { SERVICE_PORTS } from '@sentinel/shared';
 import express, { type Express, type Request, type Response } from 'express';
 import morgan from 'morgan';
 
@@ -6,7 +5,7 @@ import { metricsRouter } from './routes/metrics.js';
 import { logger } from './utils/logger.js';
 
 const app: Express = express();
-const PORT = SERVICE_PORTS['monitoring-service'];
+const PORT = process.env.PORT || 4004;
 
 app.use(morgan('combined'));
 app.use(express.json());

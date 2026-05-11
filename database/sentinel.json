@@ -22,8 +22,8 @@
       "id": 3,
       "name": "notification-service",
       "port": 4003,
-      "status": "critical",
-      "last_health_check": "2026-05-11T15:43:30.991Z",
+      "status": "healthy",
+      "last_health_check": "2026-05-11T18:00:20.322Z",
       "created_at": "2026-05-10T14:38:09.285Z",
       "updated_at": "2026-05-10T14:38:09.285Z"
     }
