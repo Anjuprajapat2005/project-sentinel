@@ -1,40 +1,104 @@
-# Project Sentinel - Autonomous Incident Resolution System
+# Project Sentinel - Autonomous Incident Resolution Engine
+
+> Claude Code integration guide for the autonomous incident resolution system with multi-agent orchestration.
 
 ## Project Overview
 
-Project Sentinel is an autonomous incident resolution system with three AI agents that work together to detect, analyze, fix, and validate incidents in a microservices architecture.
-
-### Architecture
+Project Sentinel is an autonomous incident resolution system with AI agents that detect, analyze, fix, and validate failures in a microservices architecture.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     WebSocket Server                        │
-│                    (database/server)                        │
+│                   MCP Server (Port 3456)                    │
+│                  SQLite + JSON Hybrid                       │
 ├─────────────────────────────────────────────────────────────┤
 │  Alpha (Debugger)  │  Beta (QA)      │  Gamma (Manager)    │
 │  - Log analysis    │  - Test create  │  - Orchestration    │
 │  - Root cause      │  - Test execute │  - Report gen        │
 │  - Fix generation  │  - Validation   │  - Workflow control │
 ├─────────────────────────────────────────────────────────────┤
-│                    SQLite Database                         │
-│  - services, incidents, logs, metrics                       │
-│  - agents, agent_tasks, regression_tests                    │
-│  - incident_reports, agent_logs                             │
-└─────────────────────────────────────────────────────────────┘
-         │
-         ▼
-┌─────────────────────────────────────────────────────────────┐
 │                    Next.js Dashboard                        │
-│              (apps/dashboard - Port 3006)                   │
-│  - Real-time metrics & charts                              │
-│  - Agent status panel                                      │
-│  - Incident management                                     │
+│              (apps/dashboard - Port 3000)                   │
+│  - Active Incidents   - Resolved   - System Health         │
+│  - Post-Mortem        - Logs       - Agent Status          │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## TypeScript Strict Rules
+---
 
-### Compiler Configuration
+## Architecture
+
+### Monorepo Structure
+
+```
+project-sentinel/
+├── apps/
+│   ├── dashboard/              # Next.js 14 UI (Port 3000)
+│   │   └── src/
+│   │       ├── app/           # Pages (App Router)
+│   │       ├── components/     # UI components (shadcn/ui)
+│   │       └── hooks/          # Custom React hooks
+│   └── services/              # Express.js microservices
+│       ├── api-gateway/        # Port 4000
+│       ├── auth-service/       # Port 4001
+│       ├── payment-service/    # Port 4002
+│       ├── notification-service/ # Port 4003
+│       └── monitoring-service/ # Port 4004
+├── database/                  # SQLite DB + JSON storage
+│   ├── sentinel.db           # SQLite database
+│   └── sentinel.json         # JSON-based storage
+├── scripts/
+│   ├── mcp-server.js         # MCP server (Port 3456)
+│   ├── sentinel-agent.js      # Multi-agent orchestration
+│   ├── chaos-monkey/          # Chaos injection engine
+│   └── notifications/          # Slack notification module
+├── tests/                     # Auto-generated regression tests
+├── docs/
+│   └── incident-history.log   # Resolution history (append-only)
+└── .github/workflows/         # CI/CD pipeline
+```
+
+### Service Ports
+
+| Service | Port | Description |
+|---------|------|-------------|
+| Dashboard | 3000 | Next.js monitoring UI |
+| MCP Server | 3456 | Database access API |
+| API Gateway | 4000 | Microservices entry point |
+| Auth Service | 4001 | JWT authentication |
+| Payment Service | 4002 | Payment processing |
+| Notification Service | 4003 | Email/push notifications |
+| Monitoring Service | 4004 | Metrics collection |
+
+### Database Schema
+
+```sql
+-- Core tables
+services (id, name, port, status, last_health_check)
+incidents (id, service_id, service_name, chaos_type, target_file,
+           description, severity, status, rollback_available,
+           original_content, timestamp)
+logs (id, service, level, message, metadata, timestamp)
+metrics (id, service, metric_name, value, unit, timestamp)
+
+-- Agent tables
+agents (id, name, role, status, current_task, last_active)
+agent_tasks (id, agent_id, incident_id, task_type, description,
+             status, result, error, created_at, completed_at)
+
+-- Resolution tables
+regression_tests (id, incident_id, test_name, test_file, test_content,
+                  status, pass_count, fail_count, last_run, created_at)
+incident_reports (id, incident_id, title, summary, root_cause,
+                  fix_applied, tests_created, tests_passed,
+                  resolution_time_seconds, agent_workflow, report_content)
+agent_logs (id, agent_name, log_level, message, context, timestamp)
+```
+
+---
+
+## Coding Standards
+
+### TypeScript Strict Mode
 
 All TypeScript code must pass strict mode:
 
@@ -90,7 +154,6 @@ function getServiceStatus(serviceId: number) {
 **Use proper type guards:**
 
 ```typescript
-// Required
 function isValidIncident(incident: unknown): incident is Incident {
   return (
     typeof incident === 'object' &&
@@ -99,30 +162,98 @@ function isValidIncident(incident: unknown): incident is Incident {
     'service_name' in incident
   );
 }
+```
 
-// Use guard before accessing properties
-const incident = data as unknown;
-if (isValidIncident(incident)) {
-  console.log(incident.service_name); // TypeScript knows this is safe
+### Naming Conventions
+
+| Type | Convention | Example |
+|------|------------|---------|
+| Classes | PascalCase | `AlphaDebugger`, `BetaQA`, `GammaManager` |
+| Interfaces | PascalCase | `Incident`, `ResolutionResult` |
+| Methods | camelCase | `analyzeIncident`, `generateFix` |
+| Constants | UPPER_SNAKE | `MAX_RETRIES`, `DEFAULT_INTERVAL` |
+| Tables | snake_case | `incident_reports`, `agent_logs` |
+| Columns | snake_case | `service_name`, `chaos_type` |
+
+---
+
+## Agent System
+
+### Agent Overview
+
+| Agent | Role | File | Primary Responsibilities |
+|-------|------|------|-------------------------|
+| **Alpha** | Debugger | `database/agents/alpha.js` | Log analysis, root cause, fix generation |
+| **Beta** | QA | `database/agents/beta.js` | Test creation, test execution, validation |
+| **Gamma** | Manager | `database/agents/gamma.js` | Orchestration, workflow control, reporting |
+
+### Alpha (Debugger)
+
+```typescript
+class AlphaDebugger {
+  async analyzeIncident(incident: Incident): Promise<AnalysisResult>
+  analyzeLogs(logs: LogEntry[]): Analysis
+  identifyPatterns(messages: string[]): Pattern[]
+  determineRootCause(patterns: Pattern[], errors: Error[]): string
+  generateSuggestions(patterns: Pattern[], errors: Error[]): Suggestion[]
+  async generateFix(incident: Incident, analysis: AnalysisResult): Promise<FixResult>
 }
 ```
 
-**Never use `any` type:**
+**Chaos Type Handlers:**
+- `syntax_error` - Remove injected markers
+- `logic_bug` - Revert incorrect logic
+- `deleted_dependency` - Note dependency restoration requirements
+- `invalid_json` - Re-parse and stringify
+- `type_mismatch` - Restore type annotations
+
+### Beta (QA)
 
 ```typescript
-// Forbidden
-const data: any = getData();
-
-// Required - use proper type or unknown
-const data: unknown = getData();
-// or
-interface DataType { ... }
-const data: DataType = getData();
+class BetaQA {
+  async createRegressionTests(incident: Incident, analysis: AnalysisResult): Promise<TestResult>
+  async runRegressionTests(incidentId: number): Promise<TestRunResult>
+  async getTestsForIncident(incidentId: number): Test[]
+  getTestStats(): TestStats
+}
 ```
 
-## Incident Resolution Protocol
+**Test Types by Chaos:**
+- `syntax_error` → Syntax validation + TypeScript compilation tests
+- `logic_bug` → Logic validation + status validation tests
+- `deleted_dependency` → Dependency check + module resolution tests
+- `invalid_json` → JSON validation + config schema tests
+- `type_mismatch` → Type checking + type inference tests
 
-### Before Fixing Any Incident - MANDATORY CHECK
+### Gamma (Manager)
+
+```typescript
+class GammaManager {
+  startAutonomousMode(intervalMs?: number): void
+  stopAutonomousMode(): void
+  async processIncidents(): Promise<void>
+  async resolveIncident(incident: Incident): Promise<ResolutionResult>
+  async resolveIncidentManually(incidentId: number): Promise<ResolutionResult>
+  generateReport(...): Report
+  async saveReport(report: Report): number
+  generatePostMortem(): PostMortemReport
+}
+```
+
+**Workflow Steps:**
+1. Detect critical active incidents
+2. Invoke Alpha to analyze and generate fix
+3. Invoke Beta to create and run tests
+4. Generate incident report with full workflow
+5. Save report to SQLite
+6. Update incident status to `resolved`
+7. Broadcast resolution to connected clients
+
+---
+
+## Incident Resolution Workflow
+
+### Resolution Protocol
 
 **CRITICAL: Always check incident-history.log before applying a fix!**
 
@@ -133,7 +264,7 @@ cat docs/incident-history.log
 # 2. If same chaos_type + service + fix pattern exists with "FAILED" status:
 #    → Do NOT use the same approach
 #    → Use Thinking Mode to find alternative
-#    → Document the new attempt in CLAUDE.md patterns
+#    → Document the new attempt in patterns
 
 # 3. If no history or previous attempts succeeded:
 #    → Proceed with standard fix workflow
@@ -148,129 +279,123 @@ cat docs/incident-history.log
       │
       ▼
 ┌─────────────┐
-│  FAILED     │ (if any step fails)
+│   FAILED    │ (if any step fails)
 └─────────────┘
 ```
 
-### Agent Responsibilities
+### Manual Resolution Steps
 
-#### Alpha (Debugger) - Role: `debugger`
+```bash
+# Step 1: Start MCP server
+node scripts/mcp-server.js
 
-**Responsibilities:**
-- Analyze incident logs
-- Identify error patterns
-- Determine root cause
-- Generate code fixes
+# Step 2: Analyze the service
+node scripts/sentinel-agent.js analyze auth-service
 
-**Methods:**
+# Step 3: Run full autonomous resolution
+node scripts/sentinel-agent.js resolve auth-service
+
+# Step 4: Verify the fix
+node scripts/sentinel-agent.js list
+```
+
+### Autonomous Mode
+
+```bash
+# Start autonomous mode (checks every 30 seconds)
+# Via MCP server WebSocket or terminal:
+node scripts/sentinel-agent.js autonomous start
+
+# Stop autonomous mode
+node scripts/sentinel-agent.js autonomous stop
+```
+
+---
+
+## Chaos Monkey Workflow
+
+### Overview
+
+The Chaos Monkey randomly injects bugs into microservices to test the autonomous resolution system.
+
+### Chaos Types
+
+| Type | Severity | Description |
+|------|----------|-------------|
+| `syntax_error` | Critical | Injects syntax error causing compilation failure |
+| `logic_bug` | High | Introduces logic bug causing incorrect behavior |
+| `deleted_dependency` | Critical | Removes required dependency from package.json |
+| `invalid_json` | High | Corrupts JSON configuration file |
+| `type_mismatch` | Medium | Introduces TypeScript type mismatch |
+
+### Running Chaos Monkey
+
+```bash
+# Inject random chaos into all services
+node scripts/chaos-monkey.js inject
+
+# Inject chaos into specific service
+node scripts/chaos-monkey.js inject auth-service
+
+# List all active incidents
+node scripts/chaos-monkey.js incidents
+
+# Rollback a specific incident
+node scripts/chaos-monkey.js rollback <incident_id>
+
+# Run in continuous mode (random injections)
+node scripts/chaos-monkey.js
+
+# Show help
+node scripts/chaos-monkey.js --help
+```
+
+### Chaos Injection Targets
+
+```javascript
+const targets = [
+  { service: 'auth-service', port: 4001, files: ['src/routes/auth.ts', 'src/index.ts'] },
+  { service: 'payment-service', port: 4002, files: ['src/routes/payments.ts', 'src/index.ts'] },
+  { service: 'notification-service', port: 4003, files: ['src/routes/notifications.ts', 'src/index.ts'] },
+];
+```
+
+### Rollback Process
+
+```bash
+# List available rollbacks
+node scripts/chaos-monkey.js incidents
+
+# Rollback specific incident
+node scripts/chaos-monkey.js rollback 1
+```
+
+---
+
+## Testing Strategy
+
+### Test Structure
+
 ```typescript
-async analyzeIncident(incident: Incident): Promise<AnalysisResult>
-analyzeLogs(logs: LogEntry[]): Analysis
-identifyPatterns(messages: string[]): Pattern[]
-determineRootCause(patterns: Pattern[], errors: Error[]): string
-generateSuggestions(patterns: Pattern[], errors: Error[]): Suggestion[]
-async generateFix(incident: Incident, analysis: AnalysisResult): Promise<FixResult>
+interface RegressionTest {
+  id: number;
+  incident_id: number;
+  test_name: string;
+  test_file: string;
+  test_content: string;
+  status: 'created' | 'passed' | 'failed';
+  pass_count: number;
+  fail_count: number;
+  last_run: string;
+  created_at: string;
+}
 ```
-
-**Chaos Type Handlers:**
-- `syntax_error` - Remove injected markers
-- `logic_bug` - Revert incorrect logic
-- `deleted_dependency` - Note dependency restoration requirements
-- `invalid_json` - Re-parse and stringify
-- `type_mismatch` - Restore type annotations
-
-#### Beta (QA) - Role: `qa`
-
-**Responsibilities:**
-- Create regression tests
-- Execute test suites
-- Validate fixes
-
-**Methods:**
-```typescript
-async createRegressionTests(incident: Incident, analysis: AnalysisResult): Promise<TestResult>
-async runRegressionTests(incidentId: number): Promise<TestRunResult>
-async getTestsForIncident(incidentId: number): Test[]
-getTestStats(): TestStats
-```
-
-**Test Types by Chaos:**
-- `syntax_error` → Syntax validation + TypeScript compilation tests
-- `logic_bug` → Logic validation + status validation tests
-- `deleted_dependency` → Dependency check + module resolution tests
-- `invalid_json` → JSON validation + config schema tests
-- `type_mismatch` → Type checking + type inference tests
-
-#### Gamma (Manager) - Role: `incident_manager`
-
-**Responsibilities:**
-- Orchestrate incident resolution workflow
-- Generate incident reports
-- Manage autonomous mode
-
-**Methods:**
-```typescript
-startAutonomousMode(intervalMs?: number): void
-stopAutonomousMode(): void
-async processIncidents(): Promise<void>
-async resolveIncident(incident: Incident): Promise<ResolutionResult>
-async resolveIncidentManually(incidentId: number): Promise<ResolutionResult>
-generateReport(...): Report
-async saveReport(report: Report): number
-```
-
-**Workflow Steps:**
-1. Detect critical active incidents
-2. Invoke Alpha to analyze and generate fix
-3. Invoke Beta to create and run tests
-4. Generate incident report with full workflow
-5. Save report to SQLite
-6. Update incident status to `resolved`
-7. Broadcast resolution to connected clients
-
-### Database Schema
-
-```sql
--- Core tables
-services (id, name, port, status, last_health_check)
-incidents (id, service_id, service_name, chaos_type, target_file,
-           description, severity, status, rollback_available,
-           original_content, timestamp)
-logs (id, service, level, message, metadata, timestamp)
-metrics (id, service, metric_name, value, unit, timestamp)
-
--- Agent tables
-agents (id, name, role, status, current_task, last_active)
-agent_tasks (id, agent_id, incident_id, task_type, description,
-             status, result, error, created_at, completed_at)
-
--- Resolution tables
-regression_tests (id, incident_id, test_name, test_file, test_content,
-                  status, pass_count, fail_count, last_run, created_at)
-incident_reports (id, incident_id, title, summary, root_cause,
-                  fix_applied, tests_created, tests_passed,
-                  resolution_time_seconds, agent_workflow, report_content)
-agent_logs (id, agent_name, log_level, message, context, timestamp)
-```
-
-### WebSocket Actions
-
-| Action | Parameters | Description |
-|--------|------------|-------------|
-| `startAutonomous` | `task: { interval: number }` | Start Gamma's autonomous mode |
-| `stopAutonomous` | - | Stop autonomous mode |
-| `resolveIncident` | `task: { incidentId: number }` | Manually trigger resolution |
-| `getAgentStatus` | - | Get all agent statuses |
-| `getReports` | `task: { limit: number }` | Get incident reports |
-
-## Testing Workflow
 
 ### Test Creation
 
 Beta agent creates tests based on chaos type:
 
 ```typescript
-// pattern: database/agents/beta.js
 switch (chaosType) {
   case 'syntax_error':
     return this.createSyntaxTests(serviceName, targetFile);
@@ -278,7 +403,10 @@ switch (chaosType) {
     return this.createLogicTests(serviceName, targetFile, analysis);
   case 'deleted_dependency':
     return this.createDependencyTests(serviceName);
-  // ...
+  case 'invalid_json':
+    return this.createJsonValidationTests(serviceName);
+  case 'type_mismatch':
+    return this.createTypeTests(serviceName, targetFile);
 }
 ```
 
@@ -300,116 +428,325 @@ async runRegressionTests(incidentId: number): Promise<TestRunResult> {
 }
 ```
 
-### Test Structure
-
-```typescript
-interface RegressionTest {
-  id: number;
-  incident_id: number;
-  test_name: string;
-  test_file: string;
-  test_content: string;
-  status: 'created' | 'passed' | 'failed';
-  pass_count: number;
-  fail_count: number;
-  last_run: string;
-  created_at: string;
-}
-```
-
 ### Running Tests
 
 ```bash
-# Start WebSocket server
-cd database/server && node src/index.js
+# Run all regression tests
+pnpm test
 
-# Dashboard connects automatically
-# Beta agent executes tests on resolution
+# Run specific service tests
+pnpm --filter @sentinel/dashboard test
+
+# Run with coverage
+pnpm test --coverage
 ```
 
-## Deployment Standards
+---
+
+## Deployment Process
 
 ### Environment Requirements
 
 | Component | Port | Description |
 |-----------|------|-------------|
-| WebSocket Server | 8080 | SQLite + agent system |
-| Dashboard | 3006 | Next.js UI |
+| WebSocket Server | 8080 | SQLite + agent system (legacy) |
+| Dashboard | 3000 | Next.js UI |
+| MCP Server | 3456 | Database access |
 | Auth Service | 4001 | Microservice |
 | Payment Service | 4002 | Microservice |
 | Notification Service | 4003 | Microservice |
-| API Gateway | 3001 | Entry point |
 
 ### Start Sequence
 
 ```bash
-# 1. Start WebSocket server (must be first)
-cd C:\Users\praja\project-sentinel\database\server
-node src/index.js
+# 1. Start MCP server (must be first)
+cd C:\Users\praja\project-sentinel
+node scripts/mcp-server.js
 
 # 2. Start dashboard (in separate terminal)
 cd C:\Users\praja\project-sentinel
 pnpm --filter @sentinel/dashboard dev
+
+# 3. Start microservices (optional)
+cd apps/services/auth-service && node src/index.js
+cd apps/services/payment-service && node src/index.js
 ```
 
-### Database Persistence
+### Vercel Deployment
 
-- SQLite database: `database/sentinel.db`
-- Auto-save on every write operation
-- Backup before major operations
-- Incident history: `docs/incident-history.log` (append-only)
+The dashboard deploys to Vercel via GitHub Actions.
 
-### Health Checks
+**Required Secrets:**
+- `VERCEL_TOKEN` - Vercel API token
+- `VERCEL_ORG_ID` - Vercel organization ID
+- `VERCEL_PROJECT_ID` - Vercel project ID
+
+**Configure in GitHub:** Settings → Secrets and variables → Actions
+
+### GitHub Actions CI/CD
+
+```yaml
+# .github/workflows/ci.yml
+jobs:
+  lint-and-typecheck:
+    - name: Checkout
+    - name: Setup pnpm
+    - name: Install dependencies
+    - name: Lint
+    - name: Typecheck
+
+  build:
+    needs: lint-and-typecheck
+    - name: Build
+    - name: Run tests
+
+  deploy-vercel:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    - name: Deploy to Vercel
+```
+
+---
+
+## Debugging Process
+
+### MCP Server Debugging
 
 ```bash
-# Check WebSocket
-curl -X POST -H "Content-Type: application/json" \
-  -d '{"action":"getAll"}' \
-  ws://localhost:8080
+# Start MCP server with verbose logging
+DEBUG=* node scripts/mcp-server.js
 
-# Check services
-SELECT * FROM services;
-SELECT * FROM agents;
+# Test MCP endpoints
+curl "http://localhost:3456/?action=services"
+curl "http://localhost:3456/?action=incidents"
+curl "http://localhost:3456/?action=health"
+curl "http://localhost:3456/?action=stats"
 ```
 
-## Naming Conventions
+### Service Health Checks
 
-### Files and Directories
+```bash
+# Check service health
+curl http://localhost:4001/health
+curl http://localhost:4002/health
+curl http://localhost:4003/health
 
-| Type | Convention | Example |
-|------|------------|---------|
-| Agent files | `{agent-name}.js` | `alpha.js`, `beta.js`, `gamma.js` |
-| Components | `kebab-case.tsx` | `service-status-panel.tsx` |
-| Hooks | `use-{feature}.ts` | `use-websocket.ts` |
-| Pages | `page.tsx` or `[slug]/page.tsx` | `overview/page.tsx` |
-| Types | `{feature}-types.ts` | `incident-types.ts` |
-| Services | `kebab-case` | `auth-service`, `payment-service` |
+# Check all services at once
+curl "http://localhost:3456/?action=health"
+```
 
-### Database Objects
+### Agent Debugging
 
-| Type | Convention | Example |
-|------|------------|---------|
-| Tables | `snake_case` | `incident_reports`, `agent_logs` |
-| Columns | `snake_case` | `service_name`, `chaos_type` |
-| Indexes | `idx_{table}_{column}` | `idx_incidents_severity` |
+```bash
+# Analyze specific service
+node scripts/sentinel-agent.js analyze auth-service
 
-### Code Identifiers
+# Show all services
+node scripts/sentinel-agent.js list
 
-| Type | Convention | Example |
-|------|------------|---------|
-| Classes | PascalCase | `AlphaDebugger`, `BetaQA`, `GammaManager` |
-| Interfaces | PascalCase | `Incident`, `ResolutionResult` |
-| Methods | camelCase | `analyzeIncident`, `generateFix` |
-| Constants | UPPER_SNAKE | `MAX_RETRIES`, `DEFAULT_INTERVAL` |
-| Enums | PascalCase | `LogLevel.INFO`, `IncidentStatus.ACTIVE` |
+# Resolve with verbose output
+node scripts/sentinel-agent.js resolve auth-service --verbose
+```
 
-### Agent Names
+### Log Analysis
 
-| Agent | Role | File | Class |
-|-------|------|------|-------|
-| Alpha | debugger | `database/agents/alpha.js` | `AlphaDebugger` |
-| Beta | qa | `database/agents/beta.js` | `BetaQA` |
-| Gamma | incident_manager | `database/agents/gamma.js` | `GammaManager` |
+```bash
+# View incident history
+cat docs/incident-history.log
+
+# View agent logs in database
+sqlite3 database/sentinel.db "SELECT * FROM agent_logs ORDER BY timestamp DESC LIMIT 10;"
+
+# View all incidents
+sqlite3 database/sentinel.db "SELECT * FROM incidents WHERE status = 'active';"
+```
+
+### Common Issues
+
+| Issue | Solution |
+|-------|----------|
+| Port 3000 already in use | `taskkill /F /IM node.exe` or find PID with `netstat -ano \| grep ":3000"` |
+| MCP server won't start | Check if another process is using port 3456 |
+| Dashboard shows 500 error | Clear `.next` cache: `rm -rf apps/dashboard/.next` |
+| sql.js module not found | Run `pnpm install` in root directory |
+| Services not responding | Check if services are running with `netstat -ano \| grep ":400"` |
+
+---
+
+## Troubleshooting
+
+### Quick Diagnostic
+
+```bash
+# 1. Check if dashboard is responding
+curl http://localhost:3000/api/stats
+
+# 2. Check MCP server
+curl "http://localhost:3456/?action=health"
+
+# 3. Check database
+sqlite3 database/sentinel.db "SELECT * FROM services;"
+
+# 4. Check incidents
+curl "http://localhost:3456/?action=incidents"
+
+# 5. Check running processes
+netstat -ano | grep "LISTENING"
+```
+
+### Reset Everything
+
+```bash
+# Kill all Node processes
+taskkill /F /IM node.exe
+
+# Clean dashboard cache
+rm -rf apps/dashboard/.next
+
+# Rebuild dashboard
+cd apps/dashboard && pnpm build
+
+# Start fresh
+node scripts/mcp-server.js &
+cd apps/dashboard && npx next start -p 3000 &
+```
+
+### Database Issues
+
+```bash
+# Backup database
+cp database/sentinel.db database/sentinel.db.backup
+
+# Reset to default state
+rm database/sentinel.db
+# MCP server will recreate on next start
+
+# View database contents
+sqlite3 database/sentinel.db ".tables"
+sqlite3 database/sentinel.db "SELECT * FROM incidents;"
+```
+
+### Rebuild from Scratch
+
+```bash
+# Clean install
+rm -rf node_modules apps/dashboard/.next
+pnpm install
+
+# Build all packages
+pnpm build
+
+# Start MCP server
+node scripts/mcp-server.js &
+
+# Start dashboard
+cd apps/dashboard && npx next start -p 3000 &
+```
+
+---
+
+## Commands Reference
+
+### Development
+
+```bash
+# Install dependencies
+pnpm install
+
+# Build all packages
+pnpm build
+
+# Run development
+pnpm dev
+
+# Lint
+pnpm lint
+
+# Typecheck
+pnpm typecheck
+
+# Format code
+pnpm format
+```
+
+### Dashboard
+
+```bash
+# Start dashboard in dev mode
+pnpm --filter @sentinel/dashboard dev
+
+# Build dashboard
+pnpm --filter @sentinel/dashboard build
+
+# Start production dashboard
+cd apps/dashboard && npx next start -p 3000
+```
+
+### Agents
+
+```bash
+# Start MCP server
+node scripts/mcp-server.js
+
+# Analyze service
+node scripts/sentinel-agent.js analyze <service>
+
+# Full resolution
+node scripts/sentinel-agent.js resolve <service>
+
+# List services
+node scripts/sentinel-agent.js list
+
+# Help
+node scripts/sentinel-agent.js help
+```
+
+### Chaos Monkey
+
+```bash
+# Inject chaos
+node scripts/chaos-monkey.js inject
+
+# List incidents
+node scripts/chaos-monkey.js incidents
+
+# Rollback
+node scripts/chaos-monkey.js rollback <id>
+```
+
+### Microservices
+
+```bash
+# Start auth service
+cd apps/services/auth-service && node src/index.js
+
+# Start payment service
+cd apps/services/payment-service && node src/index.js
+
+# Start notification service
+cd apps/services/notification-service && node src/index.js
+```
+
+---
+
+## File Locations
+
+| File | Path |
+|------|-------|
+| Alpha (Debugger) | `database/agents/alpha.js` |
+| Beta (QA) | `database/agents/beta.js` |
+| Gamma (Manager) | `database/agents/gamma.js` |
+| MCP Server | `scripts/mcp-server.js` |
+| Sentinel Agent | `scripts/sentinel-agent.js` |
+| Chaos Monkey | `scripts/chaos-monkey.js` |
+| Dashboard Hooks | `apps/dashboard/src/hooks/use-websocket.ts` |
+| Overview Page | `apps/dashboard/src/app/overview/page.tsx` |
+| Database | `database/sentinel.db` |
+| Incident History | `docs/incident-history.log` |
+| GitHub Actions | `.github/workflows/ci.yml` |
+| MCP Config | `.claude/mcp.json` |
+
+---
 
 ## Forbidden Patterns
 
@@ -453,22 +790,7 @@ const name = user!.name;
 const name = user?.name ?? 'Unknown';
 ```
 
-**4. No synchronous database operations in WebSocket handlers:**
-```typescript
-// Forbidden
-ws.on('message', (msg) => {
-  const result = db.query('SELECT * FROM large_table');
-  ws.send(result);
-});
-
-// Required
-ws.on('message', async (msg) => {
-  const result = await queryDatabaseAsync('SELECT * FROM large_table LIMIT 100');
-  ws.send(result);
-});
-```
-
-**5. No direct SQL injection without parameterized queries:**
+**4. No direct SQL injection:**
 ```typescript
 // Forbidden
 const sql = `SELECT * FROM users WHERE name = '${userInput}'`;
@@ -481,192 +803,54 @@ const params = [userInput];
 ### Architecture Patterns
 
 **1. No circular dependencies between agents:**
-```typescript
-// Forbidden - circular
-// alpha.js imports beta
-// beta.js imports alpha
-
-// Required - pass dependencies via constructor
-class GammaManager {
-  constructor(alpha, beta) {
-    this.alpha = alpha; // Injected, not imported
-    this.beta = beta;
-  }
-}
-```
+- Agents receive dependencies via constructor, not imports
 
 **2. No agent logic in dashboard components:**
-```typescript
-// Forbidden - business logic in UI
-function AgentPanel() {
-  const alpha = new AlphaDebugger();
-  const result = await alpha.analyze();
-}
-
-// Required - UI only, server handles logic
-function AgentStatusPanel() {
-  const { agents } = useAgents();
-  // Display only
-}
-```
+- UI only; server handles all business logic
 
 **3. No hardcoded connection strings:**
-```typescript
-// Forbidden
-const DB_PATH = 'C:\\specific\\path\\sentinel.db';
-
-// Required - use relative or environment
-const PROJECT_ROOT = join(__dirname, '..', '..');
-const DB_PATH = join(PROJECT_ROOT, 'database', 'sentinel.db');
-```
+- Use relative paths or environment variables
 
 **4. No blocking operations in WebSocket:**
-```typescript
-// Forbidden
-ws.send(syncHeavyOperation());
+- Use async operations for database queries
 
-// Required - async operations
-await asyncHeavyOperation();
-ws.send(result);
-```
-
-### Testing Patterns
-
-**1. No test files in production bundle:**
-```typescript
-// Forbidden - test code in src/
-// src/utils.ts includes test utilities
-
-// Required - separate test files
-// src/utils.ts - production code
-// __tests__/utils.test.ts - tests (excluded from build)
-```
-
-**2. No mock data without documentation:**
-```typescript
-// Forbidden
-const mockData = [1, 2, 3];
-
-// Required - documented mock data
-/**
- * Sample incident for testing resolution flow.
- * Represents a syntax_error chaos event in auth-service.
- */
-const mockIncident: Incident = { ... };
-```
-
-### Git Patterns
-
-**1. No commit with failing tests:**
-```bash
-# Required - verify tests pass
-pnpm test
-git commit -m "fix: ..."
-
-# Forbidden
-git commit -m "fix: ..." # Tests failing
-```
-
-**2. No force pushes to main:**
-```bash
-# Forbidden
-git push --force main
-
-# Required - create PR or use merge commit
-git push origin feature/incident-flow
-gh pr create --title "feat: incident resolution"
-```
+---
 
 ## Quick Reference
 
-### Common Commands
+### Dashboard URLs
 
-```bash
-# Start full system
-cd database/server && node src/index.js &
-pnpm --filter @sentinel/dashboard dev
+| Page | URL | Description |
+|------|-----|-------------|
+| Overview | http://localhost:3000/overview | System overview |
+| Active Incidents | http://localhost:3000/incidents/active | Failing services |
+| Resolved | http://localhost:3000/incidents/resolved | Fixed incidents |
+| Post-Mortem | http://localhost:3000/post-mortem | Daily reports |
+| System Health | http://localhost:3000/health | Service health |
+| Logs | http://localhost:3000/logs | Application logs |
 
-# Check agent status
-# Dashboard: http://localhost:3006 → Agent Status Panel
+### API Endpoints
 
-# Trigger manual resolution
-# WebSocket: { action: 'resolveIncident', task: { incidentId: 1 } }
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/?action=services` | GET | Get all services |
+| `/?action=incidents` | GET | Get incidents |
+| `/?action=agents` | GET | Get agent status |
+| `/?action=health` | GET | System health |
+| `/?action=stats` | GET | Dashboard stats |
+| `/update` | POST | Update database |
 
-# Enable autonomous mode
-# Dashboard: Click "Start Autonomous Mode"
-# Or WebSocket: { action: 'startAutonomous', task: { interval: 30000 } }
-```
+### Service Status Values
 
-## MCP Server Configuration
+| Status | Meaning |
+|--------|---------|
+| `healthy` | Service is running normally |
+| `critical` | Service is failing - requires attention |
+| `investigating` | Agent is analyzing the issue |
+| `resolving` | Fix is being applied |
+| `resolved` | Issue has been fixed |
 
-### SQLite MCP Setup
+---
 
-The Project Sentinel uses SQLite MCP for service status tracking. Configure Claude to use it:
-
-```bash
-# MCP Server Configuration (in Claude settings)
-# SQLite MCP connects to: database/sentinel.db
-
-# Available tools:
-# - sql.js/query - Query the database
-# - sql.js/execute - Run SQL statements
-
-# Example: Poll service status
-sql.js/query "SELECT name, status, last_health_check FROM services WHERE status = 'critical'"
-```
-
-### Service Status Polling
-
-```bash
-# Terminal command to poll service status:
-# Check all services
-sql.js/query "SELECT * FROM services ORDER BY status DESC"
-
-# Check active incidents
-sql.js/query "SELECT * FROM incidents WHERE status = 'active' ORDER BY severity DESC"
-
-# Check agent status
-sql.js/query "SELECT * FROM agents"
-```
-
-### GitHub MCP Integration (Optional)
-
-For GitHub integration, add GitHub MCP to your Claude configuration:
-
-```json
-{
-  "mcpServers": {
-    "github": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"]
-    }
-  }
-}
-```
-
-### MCP Workflow
-
-```bash
-# 1. Poll for critical services
-sql.js/query "SELECT * FROM services WHERE status = 'critical'"
-
-# 2. If critical found, trigger autonomous resolution
-# WebSocket: { action: 'startAutonomous', task: { interval: 30000 } }
-
-# 3. Monitor resolution via:
-sql.js/query "SELECT * FROM agent_tasks WHERE status = 'in_progress'"
-```
-
-### File Locations
-
-| File | Path |
-|------|------|
-| Alpha (Debugger) | `database/agents/alpha.js` |
-| Beta (QA) | `database/agents/beta.js` |
-| Gamma (Manager) | `database/agents/gamma.js` |
-| WebSocket Server | `database/server/src/index.js` |
-| Dashboard Hooks | `apps/dashboard/src/hooks/use-websocket.ts` |
-| Overview Page | `apps/dashboard/src/app/overview/page.tsx` |
-| Database | `database/sentinel.db` |
-| Incident History | `docs/incident-history.log` |
-| GitHub Actions | `.github/workflows/ci.yml` |
+*Last updated: 2026-05-11*
+*Project Sentinel v1.0.0*
