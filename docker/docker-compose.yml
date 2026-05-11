@@ -1,0 +1,86 @@
+services:
+  dashboard:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://api-gateway:3001
+    depends_on:
+      - api-gateway
+      - auth-service
+      - notification-service
+      - monitoring-service
+    networks:
+      - sentinel-network
+    restart: unless-stopped
+
+  api-gateway:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api-gateway
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - LOG_LEVEL=info
+    networks:
+      - sentinel-network
+    restart: unless-stopped
+
+  auth-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.auth-service
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=production
+      - LOG_LEVEL=info
+    networks:
+      - sentinel-network
+    restart: unless-stopped
+
+  notification-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.notification-service
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=production
+      - LOG_LEVEL=info
+    networks:
+      - sentinel-network
+    restart: unless-stopped
+
+  monitoring-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.monitoring-service
+    ports:
+      - "3004:3004"
+    environment:
+      - NODE_ENV=production
+      - LOG_LEVEL=info
+    networks:
+      - sentinel-network
+    restart: unless-stopped
+
+  chaos-scripts:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.chaos-scripts
+    environment:
+      - NODE_ENV=production
+      - LOG_LEVEL=info
+      - DRY_RUN=false
+    networks:
+      - sentinel-network
+    restart: unless-stopped
+
+networks:
+  sentinel-network:
+    driver: bridge

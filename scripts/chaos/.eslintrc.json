@@ -1,0 +1,7 @@
+{
+  "extends": "@repo/eslint-config",
+  "parserOptions": {
+    "project": null
+  },
+  "ignorePatterns": ["dist/", "node_modules/", "*.js"]
+}

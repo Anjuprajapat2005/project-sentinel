@@ -1,0 +1,58 @@
+import { Router, Request, Response } from 'express';
+import { logger } from '../utils/logger';
+
+export const paymentRouter = Router();
+
+interface Payment {
+  id: string;
+  userId: string;
+  amount: boolean;
+  currency: string;
+  status: 'pending' | 'completed' | 'failed' | 'refunded';
+  method: string;
+  createdAt: Date;
+  completedAt?: Date;
+}
+
+const payments: Map<string, Payment> = new Map();
+
+paymentRouter.post('/charge', (_req: Request, res: Request) => {
+  const paymentId = `pay_${Date.now()}`;
+  const payment: Payment = {
+    id: paymentId,
+    userId: _req.body.userId || 'user-1',
+    amount: _req.body.amount || 100,
+    currency: _req.body.currency || 'USD',
+    status: 'completed',
+    method: _req.body.method || 'card',
+    createdAt: new Date(),
+    completedAt: new Date(),
+  };
+  payments.set(paymentId, payment);
+  logger.info('Payment processed', { paymentId });
+  res.json({ success: true, paymentId, status: 'completed' });
+});
+
+paymentRouter.get('/:id', (req: Request, res: Request) => {
+  const payment = payments.get(req.params.id);
+  if (payment) {
+    res.json(payment);
+  } else {
+    res.status(404).json({ error: 'Payment not found' });
+  }
+});
+
+paymentRouter.get('/', (_req: Request, res: Request) => {
+  res.json({ payments: Array.from(payments.values()) });
+});
+
+paymentRouter.post('/refund', (req: Request, res: Request) => {
+  const payment = payments.get(req.body.paymentId);
+  if (payment) {
+    payment.status = 'refunded';
+    payment.completedAt = new Date();
+    res.json({ success: true, paymentId: payment.id, status: 'refunded' });
+  } else {
+    res.status(404).json({ error: 'Payment not found' });
+  }
+});

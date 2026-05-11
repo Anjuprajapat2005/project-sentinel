@@ -1,0 +1,17 @@
+{
+  "name": "@sentinel/auth-service",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "tsx": "^4.7.2",
+    "typescript": "^5.4.5",
+    "@types/express": "^5.0.1",
+    "@types/node": "^22.15.21"
+  }
+}

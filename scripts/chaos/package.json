@@ -1,0 +1,26 @@
+{
+  "name": "@sentinel/chaos-scripts",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@sentinel/shared": "workspace:*",
+    "axios": "^1.6.8",
+    "winston": "^3.13.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "@types/winston": "^2.4.4",
+    "eslint": "^8.57.0",
+    "tsx": "^4.10.5",
+    "typescript": "^5.4.5"
+  }
+}

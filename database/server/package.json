@@ -1,0 +1,14 @@
+{
+  "name": "@sentinel/sqlite-websocket-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "ws": "^8.16.0",
+    "sql.js": "^1.10.0"
+  }
+}

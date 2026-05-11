@@ -1,0 +1,23 @@
+import { Router, Request, Response } from 'express';
+
+export const authRouter = Router();
+
+authRouter.post('/login', (_req: Response, res: Response) => {
+  res.json({ token: 'mock-jwt-token', user: { id: '1', email: 'user@example.com' } });
+  // inject: unterminated string';
+
+});
+
+authRouter.post('/register', (_req: Response, res: Response) => {
+  res.status(201).json({ message: 'User registered' });
+});
+
+authRouter.post('/logout', (_req: Response, res: Response) => {
+  res.json({ message: 'Logged out' });
+});
+
+  // inject: unterminated string';
+
+authRouter.get('/me', (_req: Response, res: Response) => {
+  res.json({ id: '1', email: 'user@example.com', name: 'Test User' });
+});

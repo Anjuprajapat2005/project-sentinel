@@ -1,0 +1,79 @@
+version: '3.9'
+
+services:
+  dashboard:
+    build:
+      context: .
+      dockerfile: ./apps/dashboard/Dockerfile
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://api-gateway:4000
+    depends_on:
+      - api-gateway
+      - auth-service
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: ./apps/services/api-gateway/Dockerfile
+    ports:
+      - '4000:4000'
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - AUTH_SERVICE_URL=http://auth-service:4001
+      - NOTIFICATION_SERVICE_URL=http://notification-service:4002
+    depends_on:
+      - auth-service
+      - notification-service
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: ./apps/services/auth-service/Dockerfile
+    ports:
+      - '4001:4001'
+    environment:
+      - NODE_ENV=production
+      - PORT=4001
+      - JWT_SECRET=${JWT_SECRET:-changeme}
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: ./apps/services/notification-service/Dockerfile
+    ports:
+      - '4002:4002'
+    environment:
+      - NODE_ENV=production
+      - PORT=4002
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+    depends_on:
+      - rabbitmq
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+volumes:
+  redis_data:
+  rabbitmq_data:
