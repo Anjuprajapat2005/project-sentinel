@@ -1,0 +1,11 @@
+=== CHAOS MONKEY INCIDENT REPORT ===
+ID: 276
+Timestamp: 2026-05-10T16:43:28.992Z
+Service: payment-service
+Chaos Type: syntax_error
+Target File: apps/services/payment-service/src/index.ts
+Description: Syntax error injected at line 15 in src/index.ts
+Severity: critical
+Status: active
+Rollback Available: true
+=====================================

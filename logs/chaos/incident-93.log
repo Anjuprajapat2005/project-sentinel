@@ -1,0 +1,11 @@
+=== CHAOS MONKEY INCIDENT REPORT ===
+ID: 93
+Timestamp: 2026-05-10T12:53:52.362Z
+Service: notification-service
+Chaos Type: invalid_json
+Target File: apps/services/notification-service/package.json
+Description: Corrupted package.json with invalid JSON
+Severity: high
+Status: active
+Rollback Available: true
+=====================================

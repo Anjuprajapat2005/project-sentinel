@@ -1,0 +1,11 @@
+=== CHAOS MONKEY INCIDENT REPORT ===
+ID: 14
+Timestamp: 2026-05-10T11:52:14.815Z
+Service: payment-service
+Chaos Type: deleted_dependency
+Target File: apps/services/payment-service/package.json
+Description: Deleted dependency: express from payment-service
+Severity: critical
+Status: active
+Rollback Available: true
+=====================================

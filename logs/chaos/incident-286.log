@@ -1,0 +1,11 @@
+=== CHAOS MONKEY INCIDENT REPORT ===
+ID: 286
+Timestamp: 2026-05-10T16:53:59.180Z
+Service: auth-service
+Chaos Type: deleted_dependency
+Target File: apps/services/auth-service/package.json
+Description: Deleted dependency: morgan from auth-service
+Severity: critical
+Status: active
+Rollback Available: true
+=====================================

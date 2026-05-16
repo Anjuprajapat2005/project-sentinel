@@ -1,0 +1,11 @@
+=== CHAOS MONKEY INCIDENT REPORT ===
+ID: 100
+Timestamp: 2026-05-10T13:00:22.969Z
+Service: auth-service
+Chaos Type: invalid_json
+Target File: apps/services/auth-service/package.json
+Description: Corrupted package.json with invalid JSON
+Severity: high
+Status: active
+Rollback Available: true
+=====================================

@@ -1,0 +1,11 @@
+=== CHAOS MONKEY INCIDENT REPORT ===
+ID: 232
+Timestamp: 2026-05-10T15:52:58.100Z
+Service: auth-service
+Chaos Type: type_mismatch
+Target File: apps/services/auth-service/src/middleware/auth.ts
+Description: Type mismatch injected in src/middleware/auth.ts
+Severity: medium
+Status: active
+Rollback Available: true
+=====================================

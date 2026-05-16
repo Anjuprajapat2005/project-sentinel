@@ -1,0 +1,11 @@
+=== CHAOS MONKEY INCIDENT REPORT ===
+ID: 184
+Timestamp: 2026-05-10T15:04:27.265Z
+Service: payment-service
+Chaos Type: logic_bug
+Target File: apps/services/payment-service/src/routes/payments.ts
+Description: Logic bug injected in src/routes/payments.ts
+Severity: high
+Status: active
+Rollback Available: true
+=====================================

@@ -1,0 +1,11 @@
+=== CHAOS MONKEY INCIDENT REPORT ===
+ID: 149
+Timestamp: 2026-05-10T14:25:56.701Z
+Service: payment-service
+Chaos Type: deleted_dependency
+Target File: apps/services/payment-service/package.json
+Description: Deleted dependency: stripe from payment-service
+Severity: critical
+Status: active
+Rollback Available: true
+=====================================

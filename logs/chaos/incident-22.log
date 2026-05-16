@@ -1,0 +1,11 @@
+=== CHAOS MONKEY INCIDENT REPORT ===
+ID: 22
+Timestamp: 2026-05-10T11:59:14.877Z
+Service: notification-service
+Chaos Type: deleted_dependency
+Target File: apps/services/notification-service/package.json
+Description: Deleted dependency: @sentinel/shared from notification-service
+Severity: critical
+Status: active
+Rollback Available: true
+=====================================

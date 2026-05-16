@@ -1,0 +1,11 @@
+=== CHAOS MONKEY INCIDENT REPORT ===
+ID: 274
+Timestamp: 2026-05-10T16:41:58.954Z
+Service: payment-service
+Chaos Type: deleted_dependency
+Target File: apps/services/payment-service/package.json
+Description: Deleted dependency: cors from payment-service
+Severity: critical
+Status: active
+Rollback Available: true
+=====================================

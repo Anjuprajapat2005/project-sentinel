@@ -1,0 +1,11 @@
+=== CHAOS MONKEY INCIDENT REPORT ===
+ID: 294
+Timestamp: 2026-05-11T06:38:16.661Z
+Service: payment-service
+Chaos Type: deleted_dependency
+Target File: apps/services/payment-service/package.json
+Description: Deleted dependency: winston from payment-service
+Severity: critical
+Status: active
+Rollback Available: true
+=====================================

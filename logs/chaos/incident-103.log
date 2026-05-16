@@ -1,0 +1,11 @@
+=== CHAOS MONKEY INCIDENT REPORT ===
+ID: 103
+Timestamp: 2026-05-10T13:05:53.108Z
+Service: auth-service
+Chaos Type: logic_bug
+Target File: apps/services/auth-service/src/middleware/auth.ts
+Description: Logic bug injected in src/middleware/auth.ts
+Severity: high
+Status: active
+Rollback Available: true
+=====================================

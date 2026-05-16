@@ -1,0 +1,11 @@
+=== CHAOS MONKEY INCIDENT REPORT ===
+ID: 41
+Timestamp: 2026-05-10T12:14:45.136Z
+Service: notification-service
+Chaos Type: deleted_dependency
+Target File: apps/services/notification-service/package.json
+Description: Deleted dependency: cors from notification-service
+Severity: critical
+Status: active
+Rollback Available: true
+=====================================

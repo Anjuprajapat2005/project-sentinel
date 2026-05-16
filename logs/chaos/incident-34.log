@@ -1,0 +1,11 @@
+=== CHAOS MONKEY INCIDENT REPORT ===
+ID: 34
+Timestamp: 2026-05-10T12:09:45.056Z
+Service: auth-service
+Chaos Type: invalid_json
+Target File: apps/services/auth-service/tsconfig.json
+Description: Corrupted tsconfig.json with invalid JSON
+Severity: high
+Status: active
+Rollback Available: true
+=====================================

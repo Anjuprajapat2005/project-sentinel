@@ -1,0 +1,11 @@
+=== CHAOS MONKEY INCIDENT REPORT ===
+ID: 11
+Timestamp: 2026-05-16T14:11:17.788Z
+Service: auth-service
+Chaos Type: deleted_dependency
+Target File: apps/services/auth-service/package.json
+Description: Deleted dependency: winston from auth-service
+Severity: critical
+Status: active
+Rollback Available: true
+=====================================

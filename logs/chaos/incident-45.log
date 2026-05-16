@@ -1,0 +1,11 @@
+=== CHAOS MONKEY INCIDENT REPORT ===
+ID: 45
+Timestamp: 2026-05-10T12:17:45.216Z
+Service: auth-service
+Chaos Type: syntax_error
+Target File: apps/services/auth-service/src/middleware/auth.ts
+Description: Syntax error injected at line 65 in src/middleware/auth.ts
+Severity: critical
+Status: active
+Rollback Available: true
+=====================================

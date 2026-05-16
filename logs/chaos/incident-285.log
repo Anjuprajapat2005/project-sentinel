@@ -1,0 +1,11 @@
+=== CHAOS MONKEY INCIDENT REPORT ===
+ID: 285
+Timestamp: 2026-05-10T16:52:59.136Z
+Service: payment-service
+Chaos Type: type_mismatch
+Target File: apps/services/payment-service/src/index.ts
+Description: Type mismatch injected in src/index.ts
+Severity: medium
+Status: active
+Rollback Available: true
+=====================================

@@ -1,0 +1,11 @@
+=== CHAOS MONKEY INCIDENT REPORT ===
+ID: 43
+Timestamp: 2026-05-10T12:16:45.179Z
+Service: auth-service
+Chaos Type: deleted_dependency
+Target File: apps/services/auth-service/package.json
+Description: Deleted dependency: bcrypt from auth-service
+Severity: critical
+Status: active
+Rollback Available: true
+=====================================

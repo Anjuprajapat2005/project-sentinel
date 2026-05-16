@@ -1,0 +1,11 @@
+=== CHAOS MONKEY INCIDENT REPORT ===
+ID: 139
+Timestamp: 2026-05-10T14:18:56.629Z
+Service: notification-service
+Chaos Type: deleted_dependency
+Target File: apps/services/notification-service/package.json
+Description: Deleted dependency: dotenv from notification-service
+Severity: critical
+Status: active
+Rollback Available: true
+=====================================

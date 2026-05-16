@@ -1,0 +1,11 @@
+=== CHAOS MONKEY INCIDENT REPORT ===
+ID: 218
+Timestamp: 2026-05-10T15:40:27.855Z
+Service: auth-service
+Chaos Type: deleted_dependency
+Target File: apps/services/auth-service/package.json
+Description: Deleted dependency: cors from auth-service
+Severity: critical
+Status: active
+Rollback Available: true
+=====================================

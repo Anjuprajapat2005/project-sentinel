@@ -1,0 +1,11 @@
+=== CHAOS MONKEY INCIDENT REPORT ===
+ID: 68
+Timestamp: 2026-05-10T12:34:52.050Z
+Service: notification-service
+Chaos Type: type_mismatch
+Target File: apps/services/notification-service/src/routes/notifications.ts
+Description: Type mismatch injected in src/routes/notifications.ts
+Severity: medium
+Status: active
+Rollback Available: true
+=====================================

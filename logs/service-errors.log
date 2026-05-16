@@ -1,0 +1,5 @@
+[2026-05-16T10:30:00Z] ERROR: Service auth-service failed health check - Connection refused
+[2026-05-16T10:30:05Z] ERROR: Service payment-service timeout - Response took 5000ms
+[2026-05-16T10:30:10Z] WARN: Database connection pool at 80% capacity
+[2026-05-16T10:30:15Z] ERROR: notification-service returned 500 on /api/send
+[2026-05-16T10:30:20Z] ERROR: MCP server failed to poll monitoring-service

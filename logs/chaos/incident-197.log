@@ -1,0 +1,11 @@
+=== CHAOS MONKEY INCIDENT REPORT ===
+ID: 197
+Timestamp: 2026-05-10T15:20:57.539Z
+Service: notification-service
+Chaos Type: logic_bug
+Target File: apps/services/notification-service/src/routes/notifications.ts
+Description: Logic bug injected in src/routes/notifications.ts
+Severity: high
+Status: active
+Rollback Available: true
+=====================================

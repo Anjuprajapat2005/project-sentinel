@@ -1,0 +1,11 @@
+=== CHAOS MONKEY INCIDENT REPORT ===
+ID: 6
+Timestamp: 2026-05-16T10:05:09.863Z
+Service: notification-service
+Chaos Type: syntax_error
+Target File: apps/services/notification-service/src/routes/notifications.ts
+Description: Syntax error injected at line 11 in src/routes/notifications.ts
+Severity: critical
+Status: active
+Rollback Available: true
+=====================================

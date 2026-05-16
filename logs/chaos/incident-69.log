@@ -1,0 +1,11 @@
+=== CHAOS MONKEY INCIDENT REPORT ===
+ID: 69
+Timestamp: 2026-05-10T12:35:22.016Z
+Service: payment-service
+Chaos Type: invalid_json
+Target File: apps/services/payment-service/tsconfig.json
+Description: Corrupted tsconfig.json with invalid JSON
+Severity: high
+Status: active
+Rollback Available: true
+=====================================

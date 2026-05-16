@@ -1,0 +1,11 @@
+=== CHAOS MONKEY INCIDENT REPORT ===
+ID: 5
+Timestamp: 2026-05-16T10:04:39.852Z
+Service: payment-service
+Chaos Type: syntax_error
+Target File: apps/services/payment-service/src/utils/validator.ts
+Description: Syntax error injected at line 3 in src/utils/validator.ts
+Severity: critical
+Status: active
+Rollback Available: true
+=====================================

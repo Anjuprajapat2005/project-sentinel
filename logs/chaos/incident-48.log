@@ -1,0 +1,11 @@
+=== CHAOS MONKEY INCIDENT REPORT ===
+ID: 48
+Timestamp: 2026-05-10T12:19:45.202Z
+Service: notification-service
+Chaos Type: syntax_error
+Target File: apps/services/notification-service/src/utils/logger.ts
+Description: Syntax error injected at line 27 in src/utils/logger.ts
+Severity: critical
+Status: active
+Rollback Available: true
+=====================================

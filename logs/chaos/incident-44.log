@@ -1,0 +1,11 @@
+=== CHAOS MONKEY INCIDENT REPORT ===
+ID: 44
+Timestamp: 2026-05-10T12:17:15.179Z
+Service: notification-service
+Chaos Type: deleted_dependency
+Target File: apps/services/notification-service/package.json
+Description: Deleted dependency: express from notification-service
+Severity: critical
+Status: active
+Rollback Available: true
+=====================================
