@@ -1,0 +1,91 @@
+{
+  "id": 1,
+  "title": "Service Health Restoration Report",
+  "timestamp": "2026-05-16T09:32:35.776Z",
+  "services": [
+    {
+      "name": "auth-service",
+      "status": "healthy",
+      "port": 4001,
+      "health_endpoint": "/health",
+      "issues_resolved": [
+        "syntax_errors",
+        "runtime_errors"
+      ],
+      "tests_passed": 3
+    },
+    {
+      "name": "payment-service",
+      "status": "healthy",
+      "port": 4002,
+      "health_endpoint": "/health",
+      "issues_resolved": [],
+      "tests_passed": 3
+    },
+    {
+      "name": "notification-service",
+      "status": "healthy",
+      "port": 4003,
+      "health_endpoint": "/health",
+      "issues_resolved": [
+        "health_check_failures"
+      ],
+      "tests_passed": 3
+    }
+  ],
+  "total_tests_passed": 9,
+  "total_tests_failed": 0,
+  "resolution_time_seconds": 45,
+  "workflow": [
+    {
+      "step": "inspect_services",
+      "agent": "Alpha",
+      "status": "completed"
+    },
+    {
+      "step": "analyze_logs",
+      "agent": "Alpha",
+      "status": "completed"
+    },
+    {
+      "step": "detect_endpoints",
+      "agent": "Alpha",
+      "status": "completed"
+    },
+    {
+      "step": "fix_dashboard",
+      "agent": "Alpha",
+      "status": "completed"
+    },
+    {
+      "step": "stabilize_monitoring",
+      "agent": "Alpha",
+      "status": "completed"
+    },
+    {
+      "step": "repair_health",
+      "agent": "Alpha",
+      "status": "completed"
+    },
+    {
+      "step": "create_tests",
+      "agent": "Beta",
+      "status": "completed"
+    },
+    {
+      "step": "run_tests",
+      "agent": "Beta",
+      "status": "completed"
+    },
+    {
+      "step": "generate_report",
+      "agent": "Gamma",
+      "status": "completed"
+    },
+    {
+      "step": "generate_postmortem",
+      "agent": "Gamma",
+      "status": "completed"
+    }
+  ]
+}
