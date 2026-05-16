@@ -14,6 +14,8 @@ app.get('/health', (_req: Request, res: Response) => {
 });
 
 app.use('/notifications', notificationRouter);
+  // inject: unterminated string';
+
 
 app.listen(PORT, () => {
   logger.info(`Notification Service listening on port ${PORT}`);

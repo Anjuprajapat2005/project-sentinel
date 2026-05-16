@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(netstat -ano)",
+      "Bash(Select-String \"LISTENING\")",
+      "Bash(Select-String \"3000|3456|400\")",
+      "PowerShell(Get-Process *)",
+      "Bash(Get-Content *)",
+      "Bash(powershell *)",
+      "PowerShell(Start-Process -FilePath \"node\" -ArgumentList \"src/index.js\" -WorkingDirectory \"C:\\\\Users\\\\praja\\\\project-sentinel\\\\apps\\\\services\\\\notification-service\" -NoNewWindow -PassThru | Select-Object -Property Id,HasExited,StartTime)",
+      "PowerShell(curl *)",
+      "PowerShell(Invoke-WebRequest -Uri \"http://localhost:3456/?action=health\" -UseBasicParsing | Select-Object -ExpandProperty Content)",
+      "PowerShell(Invoke-WebRequest -Uri \"http://localhost:3456/?action=stats\" -UseBasicParsing | Select-Object -ExpandProperty Content)",
+      "PowerShell(Invoke-WebRequest -Uri \"http://localhost:3456/?action=services\" -UseBasicParsing | Select-Object -ExpandProperty Content)",
+      "PowerShell(Invoke-WebRequest -Uri \"http://localhost:3456/?action=incidents\" -UseBasicParsing | Select-Object -ExpandProperty Content)"
+    ]
+  }
+}

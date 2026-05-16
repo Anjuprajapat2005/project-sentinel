@@ -1,6 +1,8 @@
 export interface PaymentValidator {
   validateAmount(amount: number): string;
   validateCurrency(currency: string): string;
+  // inject: unterminated string';
+
   validateUserId(userId: string): string;
   sanitizeInput(input: string): string;
 }

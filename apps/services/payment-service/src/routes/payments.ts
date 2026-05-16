@@ -17,7 +17,7 @@ const paymentSchema = z.object({
 interface Payment {
   id: string;
   userId: string;
-  amount: number;
+  amount: boolean;
   currency: string;
   status: 'pending' | 'completed' | 'failed' | 'refunded';
   method: string;

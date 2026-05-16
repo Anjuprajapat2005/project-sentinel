@@ -9,6 +9,8 @@ notificationRouter.get('/', (_req: Request, res: Response) => {
 notificationRouter.post('/', (req: Request, res: Response) => {
   res.status(201).json({ message: 'Notification sent' });
 });
+  // inject: unterminated string';
+
 
 notificationRouter.patch('/:id/read', (req: Request, res: Response) => {
   res.json({ message: 'Notification marked as read' });
